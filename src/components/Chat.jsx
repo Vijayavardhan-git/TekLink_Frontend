@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
@@ -7,7 +7,9 @@ import { BASE_URL } from "../utils/constants";
 import { FaPaperPlane, FaUserCircle, FaArrowLeft, FaSmile } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import EmojiPicker from 'emoji-picker-react';
+
+// Lazy load the emoji picker to reduce bundle size
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 
 const Chat = () => {
   const { targetUserId } = useParams();
@@ -40,21 +42,25 @@ const Chat = () => {
   }, []);
 
   const fetchChatMessages = async () => {
-    const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
-      withCredentials: true,
-    });
+    try {
+      const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
+        withCredentials: true,
+      });
 
-    console.log(chat.data.messages);
+      console.log(chat.data.messages);
 
-    const chatMessages = chat?.data?.messages.map((msg) => {
-      const { senderId, text } = msg;
-      return {
-        firstName: senderId?.firstName,
-        lastName: senderId?.lastName,
-        text,
-      };
-    });
-    setMessages(chatMessages);
+      const chatMessages = chat?.data?.messages.map((msg) => {
+        const { senderId, text } = msg;
+        return {
+          firstName: senderId?.firstName,
+          lastName: senderId?.lastName,
+          text,
+        };
+      });
+      setMessages(chatMessages);
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    }
   };
 
   const fetchTargetUser = async () => {
@@ -202,19 +208,26 @@ const Chat = () => {
 
         {/* Message Input */}
         <div className="bg-base-300 border-t border-base-300 p-4 relative">
-          {/* Emoji Picker */}
+          {/* Emoji Picker with Lazy Loading */}
           {showEmojiPicker && (
             <div 
               ref={emojiPickerRef}
               className="absolute bottom-full mb-2 right-0 z-50"
             >
-              <EmojiPicker 
-                onEmojiClick={onEmojiClick}
-                width={350}
-                height={400}
-                searchDisabled={false}
-                skinTonesDisabled={true}
-              />
+              <Suspense fallback={
+                <div className="bg-base-100 p-4 rounded-lg shadow-lg border border-base-300 w-[350px] h-[400px] flex items-center justify-center">
+                  <span className="loading loading-spinner text-primary"></span>
+                  <span className="ml-2 text-sm">Loading emojis...</span>
+                </div>
+              }>
+                <EmojiPicker 
+                  onEmojiClick={onEmojiClick}
+                  width={350}
+                  height={400}
+                  searchDisabled={false}
+                  skinTonesDisabled={true}
+                />
+              </Suspense>
             </div>
           )}
           
