@@ -75,11 +75,6 @@ const Login = () => {
                 </>
               )}
             </h1>
-            {/* <p className="text-white/90 mt-1">
-              {isLoginForm 
-                ? "Sign in to connect with developers" 
-                : "Create your account to get started"}
-            </p> */}
           </div>
 
           {/* Form */}
@@ -100,7 +95,7 @@ const Login = () => {
                       type="text"
                       name="firstName"
                       value={formData.firstName}
-                      placeholder="John"
+                      // placeholder="John"
                       className="input input-bordered w-full focus:ring-2 focus:ring-primary"
                       onChange={handleChange}
                       required
@@ -114,7 +109,7 @@ const Login = () => {
                       type="text"
                       name="lastName"
                       value={formData.lastName}
-                      placeholder="Doe"
+                      // placeholder="Doe"
                       className="input input-bordered w-full focus:ring-2 focus:ring-primary"
                       onChange={handleChange}
                       required
@@ -131,7 +126,7 @@ const Login = () => {
                   type="email"
                   name="emailId"
                   value={formData.emailId}
-                  placeholder="john@example.com"
+                  // placeholder="john@example.com"
                   className="input input-bordered w-full focus:ring-2 focus:ring-primary"
                   onChange={handleChange}
                   required
@@ -141,7 +136,7 @@ const Login = () => {
               <div>
                 <label className="label">
                   <span className="label-text">Password</span>
-                  {isLoginForm && (
+                  {/* {isLoginForm && (
                     <span className="label-text-alt">
                       <button 
                         type="button" 
@@ -151,13 +146,13 @@ const Login = () => {
                         Forgot password?
                       </button>
                     </span>
-                  )}
+                  )} */}
                 </label>
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
-                  placeholder="••••••••"
+                  // placeholder="••••••••"
                   className="input input-bordered w-full focus:ring-2 focus:ring-primary"
                   onChange={handleChange}
                   required
