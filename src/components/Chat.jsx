@@ -4,23 +4,40 @@ import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
-import { FaPaperPlane, FaUserCircle, FaArrowLeft } from "react-icons/fa";
+import { FaPaperPlane, FaUserCircle, FaArrowLeft, FaSmile } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import EmojiPicker from 'emoji-picker-react';
 
 const Chat = () => {
   const { targetUserId } = useParams();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [targetUser, setTargetUser] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const user = useSelector((store) => store.user);
   const userId = user?._id;
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
   const navigate = useNavigate();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const fetchChatMessages = async () => {
     const chat = await axios.get(BASE_URL + "/chat/" + targetUserId, {
@@ -45,10 +62,19 @@ const Chat = () => {
       const res = await axios.get(`${BASE_URL}/user/${targetUserId}`, {
         withCredentials: true,
       });
-      setTargetUser(res.data.user); // Assuming the backend returns { user: { firstName, lastName } }
+      setTargetUser(res.data.user);
     } catch (err) {
       console.error("Error fetching target user:", err);
     }
+  };
+
+  const onEmojiClick = (emojiData) => {
+    setNewMessage(prevMessage => prevMessage + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(prev => !prev);
   };
 
   useEffect(() => {
@@ -65,7 +91,7 @@ const Chat = () => {
       return;
     }
     const socket = createSocketConnection();
-    // As soon as the page loaded, the socket connection is made and joinChat event is emitted
+    
     socket.emit("joinChat", {
       firstName: user.firstName,
       userId,
@@ -83,6 +109,8 @@ const Chat = () => {
   }, [userId, targetUserId]);
 
   const sendMessage = () => {
+    if (!newMessage.trim()) return;
+    
     const socket = createSocketConnection();
     socket.emit("sendMessage", {
       firstName: user.firstName,
@@ -92,6 +120,7 @@ const Chat = () => {
       text: newMessage,
     });
     setNewMessage("");
+    setShowEmojiPicker(false);
   };
 
   const handleKeyPress = (e) => {
@@ -119,7 +148,6 @@ const Chat = () => {
               </div>
             </div>
             <div>
-              {/* <h2 className="font-semibold text-lg">Chat</h2> */}
               <h2 className="font-semibold text-lg">
                 {targetUser
                   ? `${targetUser.firstName} ${targetUser.lastName}`
@@ -157,7 +185,7 @@ const Chat = () => {
                       {msg.firstName} {msg.lastName}
                     </div>
                   )}
-                  <p className="text-sm">{msg.text}</p>
+                  <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
                   <div
                     className={`text-xs mt-2 ${
                       isOwnMessage ? "text-primary-content/70" : "text-gray-400"
@@ -173,8 +201,33 @@ const Chat = () => {
         </div>
 
         {/* Message Input */}
-        <div className="bg-base-300 border-t border-base-300 p-4">
+        <div className="bg-base-300 border-t border-base-300 p-4 relative">
+          {/* Emoji Picker */}
+          {showEmojiPicker && (
+            <div 
+              ref={emojiPickerRef}
+              className="absolute bottom-full mb-2 right-0 z-50"
+            >
+              <EmojiPicker 
+                onEmojiClick={onEmojiClick}
+                width={350}
+                height={400}
+                searchDisabled={false}
+                skinTonesDisabled={true}
+              />
+            </div>
+          )}
+          
           <div className="flex items-center gap-3">
+            {/* Emoji Button */}
+            <button
+              onClick={toggleEmojiPicker}
+              className="btn btn-ghost btn-circle hover:bg-base-200"
+            >
+              <FaSmile className="text-xl text-gray-400 hover:text-primary" />
+            </button>
+
+            {/* Message Input */}
             <div className="flex-1 relative">
               <input
                 value={newMessage}
@@ -184,6 +237,8 @@ const Chat = () => {
                 className="input input-bordered w-full pr-12 focus:ring-2 focus:ring-primary"
               />
             </div>
+            
+            {/* Send Button */}
             <motion.button
               onClick={sendMessage}
               disabled={!newMessage.trim()}
