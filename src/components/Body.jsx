@@ -37,8 +37,10 @@ const Body = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
-      <Footer />
+      {/* Show footer only when user is logged in */}
+      {userData && <Footer />}
     </div>
   );
 };
+
 export default Body;
