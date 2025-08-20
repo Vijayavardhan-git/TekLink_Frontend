@@ -70,7 +70,7 @@ const Connections = () => {
               Clear search
             </button>
           ) : (
-            <Link to="/discover" className="btn btn-primary gap-2">
+            <Link to="/" className="btn btn-primary gap-2">
               <FaUserFriends />
               Discover Developers
             </Link>

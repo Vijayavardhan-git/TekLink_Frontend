@@ -69,7 +69,7 @@ const Requests = () => {
           <p className="text-gray-400 mb-6">
             You don't have any connection requests at the moment
           </p>
-          <Link to="/discover" className="btn btn-primary gap-2">
+          <Link to="/" className="btn btn-primary gap-2">
             <FaUserPlus />
             Discover Developers
           </Link>
